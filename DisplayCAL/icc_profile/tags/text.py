@@ -435,7 +435,8 @@ class TextDescriptionType(ICCProfileTag, ADict):  # ICC v2
                 # unknown chars
                 value = value.decode("utf-8", "replace")
             return value
-        return None
+        # str() requires a str; None here would raise a TypeError
+        return ""
 
 
 def TextType(tagData: bytes, tagSignature: str) -> Text:  # noqa: N802, N803
