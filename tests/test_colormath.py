@@ -3,8 +3,10 @@ import math
 import pytest
 
 from DisplayCAL.colormath import (
+    HSI2RGB,
     LSTAR_K,
     REC709_P,
+    RGB2HSI,
     RGB2XYZ,
     SMPTE240M_P,
     SRGB_P,
@@ -469,3 +471,19 @@ def test_linmin_handles_dict_xt():
     result = linmin(cp, xi, di, ftol, quadratic_func, fdata)
     assert cp[0] == pytest.approx(3.0, abs=1e-3)
     assert result == pytest.approx(0.0, abs=1e-6)
+
+
+@pytest.mark.parametrize(
+    "rgb",
+    [
+        (0.8, 0.2, 0.3),  # hue in the 240-360 degree sector (red-magenta)
+        (0.8, 0.2, 0.6),  # magenta
+        (0.6, 0.2, 0.8),  # violet
+        (0.3, 0.8, 0.2),  # 0-120 degree sector
+        (0.2, 0.3, 0.8),  # 120-240 degree sector
+        (0.9, 0.5, 0.1),
+    ],
+)
+def test_hsi_round_trip(rgb):
+    """RGB -> HSI -> RGB returns the original color in every hue sector."""
+    assert HSI2RGB(*RGB2HSI(*rgb)) == pytest.approx(rgb)

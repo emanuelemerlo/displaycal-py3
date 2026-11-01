@@ -194,8 +194,8 @@ class DisplayUniformityFrame(BaseFrame):
             # Use an accelerator table for tab, space, 0-9, A-Z, numpad,
             # navigation keys and processing keys
             keycodes = [wx.WXK_TAB, wx.WXK_SPACE]
-            keycodes.extend(list(range(ord("0"), ord("9"))))
-            keycodes.extend(list(range(ord("A"), ord("Z"))))
+            keycodes.extend(list(range(ord("0"), ord("9") + 1)))
+            keycodes.extend(list(range(ord("A"), ord("Z") + 1)))
             keycodes.extend(NUMPAD_KEYCODES)
             keycodes.extend(NAV_KEYCODES)
             keycodes.extend(PROCESSING_KEYCODES)
