@@ -2270,11 +2270,11 @@ def HSI2RGB(  # noqa: N802
         b = c
     elif H <= 240:
         g = a
-        b = b
         r = c
     else:
-        b = a
+        # Assign r before b is overwritten with the primary component
         r = b
+        b = a
         g = c
 
     return tuple(v * scale for v in (r, g, b))
