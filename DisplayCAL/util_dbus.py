@@ -24,17 +24,41 @@ if sys.platform not in ("darwin", "win32"):
     from DisplayCAL.util_xml import XMLDict
 
     if USE_GI:
-        dbus_session = Gio.bus_get_sync(Gio.BusType.SESSION, None)
-        dbus_system = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-
         DBusException = GLib.Error
+
+        def _connect_bus(bus_type: object) -> object:
+            return Gio.bus_get_sync(bus_type, None)
+
+        _SESSION_BUS_TYPE = Gio.BusType.SESSION
+        _SYSTEM_BUS_TYPE = Gio.BusType.SYSTEM
     else:
         glib.threads_init()
 
-        dbus_session = dbus.SessionBus()
-        dbus_system = dbus.SystemBus()
-
         DBusException = dbus.exceptions.DBusException
+
+        def _connect_bus(bus_type: object) -> object:
+            return bus_type()
+
+        _SESSION_BUS_TYPE = dbus.SessionBus
+        _SYSTEM_BUS_TYPE = dbus.SystemBus
+
+    # A missing bus (SSH sessions, containers, minimal window managers without
+    # a session bus, or no system bus at all) must not make importing this
+    # module fail: callers already treat a ``None`` bus as "D-Bus unavailable",
+    # and DBusObject raises a DBusObjectError for it instead.
+    try:
+        dbus_session = _connect_bus(_SESSION_BUS_TYPE)
+    except DBusException as _exception:
+        print(f"Warning - could not connect to the D-Bus session bus: {_exception}")
+        dbus_session = None
+    try:
+        dbus_system = _connect_bus(_SYSTEM_BUS_TYPE)
+    except DBusException as _exception:
+        print(f"Warning - could not connect to the D-Bus system bus: {_exception}")
+        dbus_system = None
+else:
+    dbus_session = None
+    dbus_system = None
 
 
 from DisplayCAL.util_str import safe_str
@@ -118,6 +142,12 @@ class DBusObject:
         self._iface = None
         if object_path:
             bus = dbus_session if bus_type == BUSTYPE_SESSION else dbus_system
+            if bus is None:
+                bus_label = "session" if bus_type == BUSTYPE_SESSION else "system"
+                raise DBusObjectError(
+                    Exception(f"D-Bus {bus_label} bus is not available"),
+                    bus_name,
+                )
             self._bus = bus
             interface = self._bus_name
             if self._iface_name:
