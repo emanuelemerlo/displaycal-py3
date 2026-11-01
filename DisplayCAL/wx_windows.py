@@ -9164,7 +9164,9 @@ def get_gradient_panel(parent, label, x=16):
         databuffer = image.GetDataBuffer()
         for i, byte in enumerate(databuffer):
             if byte > 0:
-                databuffer[i] = round(ord(byte) * (255.0 / 223.0))
+                # Iterating the buffer yields ints, so no ord() is needed;
+                # clamp so values above 223 can't overflow a byte
+                databuffer[i] = min(255, round(byte * (255.0 / 223.0)))
         bitmap = image.ConvertToBitmap()
         bitmaps["gradient_panel"] = bitmap
     gradientpanel.SetBitmap(bitmap)

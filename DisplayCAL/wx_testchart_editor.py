@@ -1093,7 +1093,7 @@ class TestchartEditor(BaseFrame):
             p2.sizer.Add(gradientpanel, flag=wx.EXPAND)
             p2.sizer.Add(hsizer, 1, flag=wx.EXPAND)
             p2.BackgroundColour = "#333333"
-            preview = grid_cls(p2, -1, size=(-1, 100))
+            preview = wx.grid.Grid(p2, -1, size=(-1, 100))
             preview.DisableDragColSize()
             preview.DisableDragRowSize()
             preview.EnableEditing(False)
